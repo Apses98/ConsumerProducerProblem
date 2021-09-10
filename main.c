@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <pthread.h>
 #include <unistd.h>
+#include <time.h>
 #include <semaphore.h>
 #include <stdint.h>
 
@@ -13,8 +14,8 @@
 /* Global variables */
 sem_t isEmpty, isFull;
 pthread_mutex_t mutexBuffer;
-int timeinterval, num = ZERO;
-char* buffer = NULL;
+int timeinterval, num = ZERO, randomNr;
+int* buffer = NULL;
 
 /* Declarations of Pthread Routins/Functions */
 void* producer(void* args);
@@ -22,7 +23,8 @@ void* consumer(void* args);
 
 
 int main() {
-    
+	srand(time(NULL));
+
     
     int bufferSize, N;
 
@@ -38,7 +40,7 @@ int main() {
     printf("Ange bufferSize: ");
     scanf("%d", &bufferSize);  
 
-    buffer = calloc(bufferSize, sizeof(char));
+    buffer = calloc(bufferSize, sizeof(int));
         
     printf("Ange antal konsumenter: ");
     scanf("%d", &N);
@@ -85,7 +87,8 @@ int main() {
 
 
 void* producer(void* args) {
-    char x = 'A';
+	randomNr= rand() % 100;
+	int x =  randomNr;
     
     while (ONE) {
         
@@ -97,14 +100,10 @@ void* producer(void* args) {
         pthread_mutex_lock(&mutexBuffer);
         /* Make the x equal to the first "Element" in the buffer array */
         buffer[num] = x;
-        printf("Producenten producerade datan: %c\n", x);
+        printf("Producenten producerade datan: %d\n", x);
         /* Increase the index of the buffer and increase X (The Data) */
         num++;
-        x++;
-        if(x == 'z'){
-          /* When the data reaches the end of the alfabete, start again */
-          x='A';
-        }
+	x++;
         
         /* unlock it when everything is done */
         pthread_mutex_unlock(&mutexBuffer);
@@ -116,7 +115,7 @@ void* producer(void* args) {
 void* consumer(void* args) {
   int consumerNr = (intptr_t) args;
     while (ONE) {
-        char y;
+        int y;
 
         /* If the buffer is full , wait */
         sem_wait(&isFull);
@@ -132,7 +131,7 @@ void* consumer(void* args) {
         sem_post(&isEmpty);
 
         /* Print the consumed data */
-        printf("Konsumenten %d konsumerade datan: %c\n", consumerNr, y);
+        printf("Konsumenten %d konsumerade datan: %d\n", consumerNr, y);
         sleep(timeinterval);
     }
 }
